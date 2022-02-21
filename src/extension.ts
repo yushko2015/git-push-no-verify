@@ -13,6 +13,9 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		const folders = vscode.workspace.workspaceFolders;
+		if(!folders) {
+			return;
+		}
 		const folderPath = folders[0].uri.path;
 		let selectedRepository = gitApi.repositories.find((repository: any) => {
 			return repository.rootUri.path === folderPath;
