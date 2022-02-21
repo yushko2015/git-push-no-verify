@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('git-push-no-verify.gitPushNoVerify', () => {
 		const repo = git(vscode.workspace.rootPath);
 		vscode.commands.executeCommand('git.pull').then(() => {
-			repo.remote_push('origin', (e) => {
+			repo.remote_push('origin', (e: string | any) => {
 				if(!e) {
 					vscode.commands.executeCommand('git.refresh');
 					vscode.window.showInformationMessage('Changes pushed to origin without verification!');
