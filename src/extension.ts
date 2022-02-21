@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const repo = git(selectedRepository.rootUri.path);
+		const repo = git(vscode.workspace.rootPath);
 		let remoteName = selectedRepository.state.HEAD?.upstream?.remote;
 
 		vscode.commands.executeCommand('git.pull').then(() => {
@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 					vscode.commands.executeCommand('git.refresh');
 					vscode.window.showInformationMessage('Changes pushed to origin without verification!');
 				} else {
-					console.log(e);
+					vscode.window.showErrorMessage(e);
 				}
 			});
 		});
