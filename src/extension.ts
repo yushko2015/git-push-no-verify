@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-const git  = require('gift');
+import simpleGit, { SimpleGitOptions, SimpleGit  } from 'simple-git';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('git-push-no-verify.gitPushNoVerify', () => {
@@ -25,19 +25,34 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const repo = git(vscode.workspace.rootPath);
 		let remoteName = selectedRepository.state.HEAD?.upstream?.remote;
+		let branchName = selectedRepository.state.HEAD?.name;
 
-		vscode.commands.executeCommand('git.pull').then(() => {
-			repo.remote_push(remoteName, ['-u --no-verify'], (e: string | any) => {
-				if(!e) {
-					vscode.commands.executeCommand('git.refresh');
-					vscode.window.showInformationMessage('Changes pushed to origin without verification!');
-				} else {
-					vscode.window.showErrorMessage(e);
-				}
+		const options: Partial<SimpleGitOptions> = {
+			binary: 'git',
+			maxConcurrentProcesses: 6,
+			spawnOptions: { gid: 1000 },
+		 };
+
+		const git: SimpleGit = simpleGit(folderPath, options);
+
+		const pushChanges = (remote = 'origin', branch: string) => {
+			git.env({...process.env}).push(['-u', remote, branch]).then(()=> {
+				vscode.commands.executeCommand('git.refresh');
+				vscode.window.showInformationMessage('Changes pushed to origin without verification!');
+			 }).catch(e=>{
+				vscode.window.showErrorMessage(e);
+			 });
+		};
+
+		if(remoteName){
+			vscode.commands.executeCommand('git.pull').then(() => {		
+				pushChanges(remoteName, branchName);
 			});
-		});
+		} else {
+			pushChanges(remoteName, branchName);
+		}
+		
 	});
 
 	context.subscriptions.push(disposable);
